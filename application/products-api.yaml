@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-api
+spec:
+  selector:
+    app: product-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-api
+  labels:
+    app: product-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-api
+  template:
+    metadata:
+      labels:
+        app: product-api
+    spec:
+      serviceAccountName: product-api
+      containers:
+        - name: product-api
+          image: hashicorpdemoapp/product-api:v0.0.22
+          ports:
+            - containerPort: 9090
+            - containerPort: 9103
+          env:
+            - name: BIND_ADDRESS
+              value: 0.0.0.0:9090
+          command: ["/bin/sh"]
+          args: ["-c", "export DB_CONNECTION=\"host=postgres port=5432 user=$(cat /mnt/secrets-store/db-username) password=$(cat /mnt/secrets-store/db-password) dbname=products sslmode=disable\" && /app/product-api"]
+          volumeMounts:
+            - name: 'vault-db-creds'
+              mountPath: '/mnt/secrets-store'
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+            periodSeconds: 10
+            failureThreshold: 30
+      volumes:
+        - name: vault-db-creds
+          csi:
+            driver: 'secrets-store.csi.k8s.io'
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: 'products-db'
