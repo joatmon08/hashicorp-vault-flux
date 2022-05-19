@@ -13,6 +13,7 @@ flux-bootstrap:
 	kubectl apply -f clusters/local/csi-source.yaml
 	kubectl apply -f clusters/local/csi-helm.yaml
 	kubectl apply -f clusters/local/hashicorp-source.yaml
+	kubectl apply -f clusters/local/vault-serviceaccounts.yaml
 	kubectl apply -f clusters/local/vault-helm.yaml
 	kubectl apply -f clusters/local/application-bootstrap-source.yaml
 	kubectl apply -f clusters/local/database-kustomization.yaml
@@ -31,26 +32,28 @@ flux-token:
 applications:
 	kubectl apply -f clusters/local/hashicups-source.yaml
 	kubectl apply -f clusters/local/hashicups-kustomization.yaml
+	flux reconcile source git hashicups -n flux-system
+	kubectl apply -f clusters/local/vault-serviceaccounts.yaml
 
 clean:
-	vault lease revoke -f -prefix hashicups/database/creds/product
+	vault lease revoke -f -prefix hashicups/database/creds/product || true
 
-	flux delete kustomization hashicups -n flux-system
-	flux delete source git hashicups -n flux-system
+	flux delete -s kustomization hashicups -n flux-system || true
+	flux delete -s source git hashicups -n flux-system || true
 
-	flux delete kustomization database -n flux-system
-	flux delete kustomization repository -n flux-system
-	flux delete source git application-bootstrap -n flux-system
+	flux delete -s kustomization database -n flux-system || true
+	flux delete -s kustomization repository -n flux-system || true
+	flux delete -s source git application-bootstrap -n flux-system || true
 
-	vault lease revoke -f -prefix hashicups/flux/data/gitlab
-	cd vault/terraform && terraform destroy
+	vault lease revoke -f -prefix hashicups/flux/data/gitlab || true
+	cd vault/terraform && terraform destroy -auto-approve || true
 
-	flux delete hr vault -n default
-	flux delete hr csi -n default
+	flux delete -s hr vault -n default || true
+	flux delete -s hr csi -n default || true
 	kubectl delete pvc --all
 
-	flux delete source helm hashicorp -n default
-	flux delete source helm secrets-store-csi-driver -n default
-	flux uninstall -n flux-system
+	flux delete -s source helm hashicorp -n default || true
+	flux delete -s source helm secrets-store-csi-driver -n default || true
+	flux uninstall -s -n flux-system
 
 	helm del ingress-nginx -n ingress-nginx

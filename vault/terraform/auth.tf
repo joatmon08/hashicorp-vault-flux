@@ -1,12 +1,12 @@
-data "kubernetes_service_account" "vault_auth" {
-  metadata {
-    name = "vault"
-  }
-}
+# data "kubernetes_service_account" "vault_auth" {
+#   metadata {
+#     name = "vault"
+#   }
+# }
 
 data "kubernetes_secret" "vault_auth" {
   metadata {
-    name = data.kubernetes_service_account.vault_auth.default_secret_name
+    name = "vault"
   }
 }
 

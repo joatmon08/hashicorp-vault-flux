@@ -20,7 +20,7 @@ secret.
 
 ## Prerequisites
 
-- Kubernetes cluster
+- Kubernetes cluster 1.24+ (Docker Desktop)
 - Terraform v1.1+
 - Vault v1.10+
 - Flux v0.30+
