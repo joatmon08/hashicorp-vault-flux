@@ -17,6 +17,7 @@ flux-bootstrap:
 	kubectl apply -f clusters/local/vault-helm.yaml
 	kubectl apply -f clusters/local/application-bootstrap-source.yaml
 	kubectl apply -f clusters/local/database-kustomization.yaml
+	kubectl apply -f clusters/local/vault-kustomization.yaml
 
 vault-init:
 	kubectl exec -ti vault-0 -- vault operator init -key-shares=1 -key-threshold=1 -format=json > unseal.json
@@ -33,7 +34,6 @@ applications:
 	kubectl apply -f clusters/local/hashicups-source.yaml
 	kubectl apply -f clusters/local/hashicups-kustomization.yaml
 	flux reconcile source git hashicups -n flux-system
-	kubectl apply -f clusters/local/vault-serviceaccounts.yaml
 
 clean:
 	vault lease revoke -f -prefix hashicups/database/creds/product || true

@@ -2,13 +2,13 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: repository
+  name: vault
   namespace: flux-system
 spec:
   interval: 1m0s
-  path: ./gitlab
+  path: ./vault/kubernetes
   prune: true
   sourceRef:
     kind: GitRepository
     name: application-bootstrap
-  targetNamespace: flux-system
+  targetNamespace: default
