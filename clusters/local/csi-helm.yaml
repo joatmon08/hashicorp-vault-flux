@@ -11,7 +11,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: secrets-store-csi-driver
-  interval: 1m0s
+  interval: 10m0s
   values:
     enableSecretRotation: true
     syncSecret:
